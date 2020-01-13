@@ -17,10 +17,10 @@ def _send_system_email(config, subject, recips, body):
     try:
         fromaddr = config.get('email', 'fromaddr')
         smtphost = config.get('email', 'smtphost')
+        password = config.get('email', 'password')
     except (configparser.NoOptionError,
             configparser.NoSectionError):
         raise MissingEmailConfig()
-
     msg = email.mime.text.MIMEText(body)
     msg['Subject'] = subject
     msg['From'] = fromaddr
@@ -28,8 +28,9 @@ def _send_system_email(config, subject, recips, body):
     msg['Message-Id'] = email.utils.make_msgid('nx584')
     for addr in recips:
         msg['To'] = addr
-
-    smtp = smtplib.SMTP(smtphost)
+    smtp = smtplib.SMTP('smtp.gmail.com: 587')
+    smtp.starttls()
+    smtp.login(fromaddr, password)
     smtp.sendmail(fromaddr, recips, msg.as_string())
     smtp.quit()
 
@@ -126,8 +127,7 @@ def send_log_event_mail(config, event):
 
     try:
         alarm_events = set(config.get('email', 'alarm_events').split(','))
-    except (configparser.NoOptionError, configparser.NoSectionError):
-        alarm_events = set(['Alarm', 'Alarm restore', 'Manual fire',])
+    except (configparser.NoOptionError, configparser.NoSectionError):a_
 
     try:
         event_emails = set(config.get('email', 'events').split(','))
